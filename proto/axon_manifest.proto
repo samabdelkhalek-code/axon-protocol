@@ -1,0 +1,42 @@
+syntax = "proto3";
+package axon.v1;
+
+// Signed capability declaration published to the Kademlia DHT.
+message AgentManifest {
+  bytes  agent_id              = 1;  // 32 bytes — BLAKE3(public_key || genesis_hash)
+  bytes  public_key            = 2;  // 32 bytes — Ed25519 verifying key
+  bytes  capability_embedding  = 3;  // EMBEDDING_DIM bytes — int8 quantised
+  repeated string capability_tags = 4;
+  uint64 latency_sla_us        = 5;
+  uint64 base_price_per_cu     = 6;  // picoSUI
+  uint64 staked_amount         = 7;  // picoSUI
+  bytes  zk_capability_proof   = 8;  // 128 bytes — Groth16 / BN254
+  uint64 timestamp_ns          = 9;
+  bytes  signature             = 10; // 64 bytes — Ed25519
+}
+
+// Register or refresh a manifest in the DHT.
+message PublishManifestRequest  { AgentManifest manifest = 1; }
+message PublishManifestResponse { bool accepted = 1; string reason = 2; }
+
+// Discover agents by semantic capability.
+message DiscoverRequest {
+  bytes  requirement_embedding = 1; // int8 quantised, EMBEDDING_DIM
+  uint32 top_k                 = 2;
+  uint64 min_reputation_score  = 3;
+}
+
+message DiscoverResponse {
+  repeated RankedAgent results = 1;
+}
+
+message RankedAgent {
+  AgentManifest manifest     = 1;
+  float         rank_score   = 2;
+  float         capability_sim = 3;
+}
+
+service DiscoveryService {
+  rpc PublishManifest (PublishManifestRequest)  returns (PublishManifestResponse);
+  rpc Discover        (DiscoverRequest)         returns (DiscoverResponse);
+}

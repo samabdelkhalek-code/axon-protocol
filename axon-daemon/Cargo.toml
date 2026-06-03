@@ -1,0 +1,40 @@
+[package]
+name        = "axon-daemon"
+description = "AXON protocol daemon (axond) — DHT node, routing, escrow monitoring"
+version.workspace    = true
+edition.workspace    = true
+authors.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[[bin]]
+name = "axond"
+path = "src/main.rs"
+
+[dependencies]
+axon-core  = { workspace = true }
+tokio      = { workspace = true }
+sled       = { workspace = true }
+serde      = { workspace = true }
+serde_json = { workspace = true }
+tracing    = { workspace = true }
+tracing-subscriber = { workspace = true }
+thiserror  = { workspace = true }
+anyhow     = { workspace = true }
+hex        = { workspace = true }
+clap       = { workspace = true }
+rand            = { workspace = true }
+ed25519-dalek   = { workspace = true }
+futures         = { workspace = true }
+blake3          = { workspace = true }
+
+# Networking & ANN
+libp2p = { version = "0.53", features = ["tokio", "tcp", "noise", "kad", "gossipsub", "yamux", "macros"] }
+instant-distance = "0.6"
+
+# gRPC
+tonic = "0.11"
+prost = "0.12"
+
+[build-dependencies]
+tonic-build = "0.11"

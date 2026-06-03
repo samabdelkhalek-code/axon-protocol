@@ -1,0 +1,28 @@
+# Rust
+/target/
+Cargo.lock
+**/*.rs.bk
+
+# Secrets — NEVER commit these
+.axon/identity.key
+.axon/db/
+
+# Environment
+.env
+.env.local
+
+# Move / SUI
+contracts/axon/build/
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Docker
+docker/data/
+
+# Logs
+*.log

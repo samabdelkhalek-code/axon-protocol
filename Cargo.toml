@@ -1,0 +1,48 @@
+[workspace]
+members  = ["axon-core", "axon-daemon", "axon-sdk", "axon-cli"]
+resolver = "2"
+
+[workspace.package]
+version     = "0.1.0"
+edition     = "2021"
+authors     = ["AXON Protocol Contributors"]
+license     = "MIT"
+repository  = "https://github.com/your-org/axon-protocol"
+homepage    = "https://axonprotocol.dev"
+description = "Zero-trust Agent-to-Agent mesh routing protocol"
+
+[workspace.dependencies]
+# Cryptography
+blake3          = "1.5"
+ed25519-dalek   = { version = "2.1", features = ["rand_core", "serde"] }
+rand            = "0.8"
+hex             = "0.4"
+bytemuck        = { version = "1.14", features = ["derive"] }
+
+# Serialization
+serde           = { version = "1", features = ["derive"] }
+serde_json      = "1"
+
+# Async / networking
+tokio           = { version = "1", features = ["full"] }
+futures         = "0.3"
+
+# Error handling
+thiserror       = "1"
+anyhow          = "1"
+
+# Logging / metrics
+tracing         = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# HTTP (sdk <-> embedding service)
+reqwest         = { version = "0.11", features = ["json"], default-features = false }
+
+# Local KV storage
+sled            = "0.34"
+
+# CLI
+clap            = { version = "4", features = ["derive", "env"] }
+
+# Internal crates
+axon-core       = { path = "axon-core" }

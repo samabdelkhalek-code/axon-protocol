@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  axond:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: axon-daemon:latest
+    container_name: axond
+    restart: unless-stopped
+    ports:
+      - "7777:7777"
+    volumes:
+      - axon-data:/home/axon/.axon
+    environment:
+      AXON_LISTEN_ADDR: /ip4/0.0.0.0/tcp/7777
+      AXON_SUI_RPC: https://fullnode.devnet.sui.io:443
+      AXON_LOG_LEVEL: info
+      AXON_MAX_SESSIONS: "64"
+    healthcheck:
+      test: ["CMD", "axond", "--help"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  axon-data:
+    driver: local

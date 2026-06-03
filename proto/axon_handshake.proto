@@ -1,0 +1,57 @@
+syntax = "proto3";
+package axon.v1;
+
+// Initiating agent's request to engage a target for task execution.
+message HandshakeRequest {
+  bytes  session_id                    = 1;  // 16 bytes — UUIDv4
+  bytes  initiator_id                  = 2;  // 32 bytes
+  bytes  target_id                     = 3;  // 32 bytes
+  bytes  required_capability_embedding = 4;  // int8 quantised
+  bytes  task_payload_hash             = 5;  // 32 bytes — BLAKE3
+  uint64 max_compute_units             = 6;
+  uint64 max_price_per_cu              = 7;  // picoSUI
+  uint64 escrow_amount                 = 8;  // picoSUI
+  bytes  escrow_object_id              = 9;  // 32 bytes — SUI object ID
+  uint64 deadline_ns                   = 10;
+  bytes  initiator_signature           = 11; // 64 bytes — Ed25519
+}
+
+message HandshakeResponse {
+  bytes  session_id          = 1;
+  bytes  responder_id        = 2;
+  HandshakeStatus status     = 3;
+  uint64 agreed_price_per_cu = 4;  // picoSUI
+  bytes  commitment_hash     = 5;  // 32 bytes — BLAKE3
+  uint64 timestamp_ns        = 6;
+  bytes  responder_signature = 7;  // 64 bytes
+}
+
+enum HandshakeStatus {
+  ACCEPTED      = 0;
+  REJECTED      = 1;
+  COUNTER_OFFER = 2;
+}
+
+message RejectionDetail {
+  string code   = 1;
+  string detail = 2;
+}
+
+service HandshakeService {
+  rpc Handshake (HandshakeRequest) returns (HandshakeResponse);
+}
+
+message SettlementRequest {
+  bytes  session_id           = 1;
+  uint64 actual_compute_units = 2;
+  uint64 agreed_price_per_cu  = 3;
+}
+
+message SettlementResponse {
+  bool   success = 1;
+  string tx_digest = 2;
+}
+
+service SettlementService {
+  rpc Settle (SettlementRequest) returns (SettlementResponse);
+}
