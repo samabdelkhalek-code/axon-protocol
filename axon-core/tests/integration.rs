@@ -54,11 +54,11 @@ fn make_signed_request(
         escrow_amount:                 max_cu * max_price,
         escrow_object_id:              [0xABu8; 32],
         deadline_ns,
-        initiator_signature:           [0u8; 64],
+        initiator_signature:           vec![0u8; 64],
     };
 
     let sig = initiator_key.sign(&req.content_hash());
-    req.initiator_signature = sig.to_bytes();
+    req.initiator_signature = sig.to_bytes().to_vec();
     req
 }
 

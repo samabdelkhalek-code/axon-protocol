@@ -108,8 +108,6 @@ impl AgentManifest {
     /// Must be called before any routing or trust decision based on this manifest.
     /// Returns `Ok(())` if the signature is valid, `Err` otherwise.
     pub fn verify_signature(&self) -> Result<(), AxonError> {
-        use ed25519_dalek::Verifier;
-
         let vk = VerifyingKey::from_bytes(&self.public_key)
             .map_err(|_| AxonError::InvalidPublicKey)?;
 

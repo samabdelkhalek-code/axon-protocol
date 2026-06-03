@@ -171,8 +171,6 @@ impl HandshakeEngine {
         escrow_verified: bool,
         current_capacity: f32,
     ) -> Result<ValidationResult, AxonError> {
-        use ed25519_dalek::Verifier;
-
         let now_ns = Self::now_ns()?;
 
         // ── 1. Request is not expired ─────────────────────────────────────────
@@ -405,13 +403,13 @@ mod tests {
             escrow_amount: 20_000, // = 100 * 200
             escrow_object_id: [0u8; 32],
             deadline_ns: now_ns + 60_000_000_000, // 60 seconds from now
-            initiator_signature: [0u8; 64],
+            initiator_signature: vec![0u8; 64],
         };
 
         // Sign the request
         use ed25519_dalek::Signer;
         let sig = initiator_key.sign(&req.content_hash());
-        req.initiator_signature = sig.to_bytes();
+        req.initiator_signature = sig.to_bytes().to_vec();
 
         let result = engine.validate_request(&req, &initiator_manifest, true, 0.0);
         assert!(result.is_ok(), "Expected Ok, got: {:?}", result);
@@ -443,11 +441,11 @@ mod tests {
             escrow_amount: 20_000,
             escrow_object_id: [0u8; 32],
             deadline_ns: 1, // expired: Unix epoch + 1 nanosecond
-            initiator_signature: [0u8; 64],
+            initiator_signature: vec![0u8; 64],
         };
 
         use ed25519_dalek::Signer;
-        req.initiator_signature = initiator_key.sign(&req.content_hash()).to_bytes();
+        req.initiator_signature = initiator_key.sign(&req.content_hash()).to_bytes().to_vec();
 
         let err = engine.validate_request(&req, &initiator_manifest, true, 0.0)
             .unwrap_err();
