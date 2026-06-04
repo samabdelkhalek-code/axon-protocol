@@ -10,14 +10,15 @@ COPY axon-daemon/Cargo.toml axon-daemon/Cargo.toml
 COPY axon-sdk/Cargo.toml    axon-sdk/Cargo.toml
 COPY axon-cli/Cargo.toml    axon-cli/Cargo.toml
 
-# Create stub lib.rs files so cargo can resolve the dependency graph
-RUN mkdir -p axon-core/src axon-daemon/src axon-sdk/src axon-cli/src && \
+# Create stub source files so cargo can resolve the dependency graph
+RUN mkdir -p axon-core/src axon-core/benches axon-daemon/src axon-sdk/src axon-cli/src && \
     echo "pub fn stub() {}" | tee \
       axon-core/src/lib.rs axon-sdk/src/lib.rs > /dev/null && \
     echo "fn main() {}" | tee \
       axon-daemon/src/main.rs axon-cli/src/main.rs > /dev/null && \
+    echo "fn main() {}" > axon-core/benches/similarity.rs && \
     cargo build --release -p axon-daemon && \
-    rm -rf axon-core/src axon-daemon/src axon-sdk/src axon-cli/src
+    rm -rf axon-core/src axon-core/benches axon-daemon/src axon-sdk/src axon-cli/src
 
 # Copy and build the real source
 COPY axon-core/src   axon-core/src
