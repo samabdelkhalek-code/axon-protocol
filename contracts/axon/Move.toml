@@ -8,3 +8,7 @@ Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-fram
 
 [addresses]
 axon = "0x0"
+
+[environments]
+devnet   = { chain-id = "f91cee94", original-published-id = "0xa0e08b5372c8aef3fbc8381ff1be2ddaaba0eaeb82a547d5124b92d58c295293" }
+testnet  = { chain-id = "4c78adac", original-published-id = "0x0" }

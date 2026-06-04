@@ -48,7 +48,7 @@ module axon::settlement {
     ///
     /// Shared object — both initiator and responder may transact against it.
     /// Consumed exactly once by `settle_escrow` or `reclaim_expired_escrow`.
-    struct AgentEscrow has key {
+    public struct AgentEscrow has key {
         id: UID,
         /// 16-byte session UUID matching off-chain HandshakeRequest.session_id.
         session_id: vector<u8>,
@@ -63,7 +63,7 @@ module axon::settlement {
     }
 
     /// Per-agent on-chain reputation. Shared object updated on every settlement.
-    struct AgentReputation has key {
+    public struct AgentReputation has key {
         id: UID,
         agent: address,
         successful_settlements: u64,
@@ -77,7 +77,7 @@ module axon::settlement {
 
     // ── Events ───────────────────────────────────────────────────────────────
 
-    struct EscrowCreated has copy, drop {
+    public struct EscrowCreated has copy, drop {
         escrow_id:   ID,
         session_id:  vector<u8>,
         initiator:   address,
@@ -86,7 +86,7 @@ module axon::settlement {
         deadline_ms: u64,
     }
 
-    struct EscrowSettled has copy, drop {
+    public struct EscrowSettled has copy, drop {
         escrow_id:          ID,
         session_id:         vector<u8>,
         responder:          address,
@@ -97,7 +97,7 @@ module axon::settlement {
         new_eigentrust:     u64,
     }
 
-    struct EscrowReclaimed has copy, drop {
+    public struct EscrowReclaimed has copy, drop {
         escrow_id:      ID,
         session_id:     vector<u8>,
         initiator:      address,
