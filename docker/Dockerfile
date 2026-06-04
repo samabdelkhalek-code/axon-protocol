@@ -1,30 +1,15 @@
 # ── Build stage ──────────────────────────────────────────────────────────────
 FROM rust:1.86-slim-bookworm AS builder
 
+# Install protobuf compiler (required by tonic_build in axon-daemon/build.rs)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /build
 
-# Cache dependency compilation separately from source
-COPY Cargo.toml Cargo.lock ./
-COPY axon-core/Cargo.toml   axon-core/Cargo.toml
-COPY axon-daemon/Cargo.toml axon-daemon/Cargo.toml
-COPY axon-sdk/Cargo.toml    axon-sdk/Cargo.toml
-COPY axon-cli/Cargo.toml    axon-cli/Cargo.toml
-
-# Create stub source files so cargo can resolve the dependency graph
-RUN mkdir -p axon-core/src axon-core/benches axon-daemon/src axon-sdk/src axon-cli/src && \
-    echo "pub fn stub() {}" | tee \
-      axon-core/src/lib.rs axon-sdk/src/lib.rs > /dev/null && \
-    echo "fn main() {}" | tee \
-      axon-daemon/src/main.rs axon-cli/src/main.rs > /dev/null && \
-    echo "fn main() {}" > axon-core/benches/similarity.rs && \
-    cargo build --release -p axon-daemon && \
-    rm -rf axon-core/src axon-core/benches axon-daemon/src axon-sdk/src axon-cli/src
-
-# Copy and build the real source
-COPY axon-core/src   axon-core/src
-COPY axon-daemon/src axon-daemon/src
-COPY axon-sdk/src    axon-sdk/src
-COPY axon-cli/src    axon-cli/src
+# Copy full source tree
+COPY . .
 
 ENV RUSTFLAGS="-C target-cpu=native"
 RUN cargo build --release -p axon-daemon
