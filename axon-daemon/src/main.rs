@@ -142,7 +142,8 @@ async fn main() -> anyhow::Result<()> {
     // TODO: Start SUI escrow monitor task
     // TODO: Start DHT bootstrap task
 
-    let addr = "127.0.0.1:50051".parse()?;
+    let grpc_addr = std::env::var("AXON_GRPC_ADDR").unwrap_or_else(|_| "0.0.0.0:50051".to_string());
+    let addr = grpc_addr.parse()?;
     let discovery = DiscoveryImpl::new(state.clone());
     let handshake = HandshakeImpl::new(state.clone());
     let settlement = SettlementImpl::new(state.clone());
