@@ -106,6 +106,9 @@ impl Dht for Libp2pDht {
         manifest.verify_signature()
             .map_err(|e| format!("Invalid manifest signature: {e}"))?;
 
+        // Always keep a local copy so get() works even without remote peers.
+        self.local_store.write().unwrap().insert(manifest.agent_id, manifest.clone());
+
         let (reply_tx, reply_rx) = oneshot::channel();
         let _ = self.tx.try_send(DhtCommand::Publish {
             manifest: manifest.clone(),

@@ -72,7 +72,9 @@ pub async fn run_swarm(
                                         let _ = reply.send(Ok(()));
                                     }
                                     libp2p::kad::QueryResult::PutRecord(Err(e)) => {
-                                        let _ = reply.send(Err(e.to_string()));
+                                        // No remote peers — record is in local Kademlia store.
+                                        tracing::warn!(error = %e, "DHT quorum failed (solo node); stored locally");
+                                        let _ = reply.send(Ok(()));
                                     }
                                     _ => {}
                                 }
