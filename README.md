@@ -1,6 +1,6 @@
 # AXON Protocol
 
-[![CI](https://github.com/your-org/axon-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/axon-protocol/actions)
+[![CI](https://github.com/samabdelkhalek-code/axon-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/samabdelkhalek-code/axon-protocol/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.78%2B-orange)](https://rustup.rs)
 [![SUI Move](https://img.shields.io/badge/Move-SUI-6fbcf0)](https://docs.sui.io)
@@ -83,7 +83,7 @@ axon-protocol/
 ### 1. Clone and setup
 
 ```bash
-git clone https://github.com/your-org/axon-protocol.git
+git clone https://github.com/samabdelkhalek-code/axon-protocol.git
 cd axon-protocol
 ./scripts/dev_setup.sh
 cp .env.example .env

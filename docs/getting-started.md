@@ -19,7 +19,7 @@ sui client faucet   # get test SUI
 ## First run
 
 ```bash
-git clone https://github.com/your-org/axon-protocol
+git clone https://github.com/samabdelkhalek-code/axon-protocol
 cd axon-protocol
 cp .env.example .env
 make test          # verify everything compiles and tests pass
