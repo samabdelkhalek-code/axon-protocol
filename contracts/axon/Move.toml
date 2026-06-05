@@ -4,11 +4,12 @@ version = "0.1.0"
 edition = "2024.beta"
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
 
 [addresses]
 axon = "0x0"
 
 [environments]
-devnet   = { chain-id = "f91cee94", original-published-id = "0xa0e08b5372c8aef3fbc8381ff1be2ddaaba0eaeb82a547d5124b92d58c295293" }
+devnet   = { chain-id = "f91cee94", original-published-id = "0x6fb5c1c5763e584da53914dc7b2c702afdde527f20e3f003f302eeaec29f2a31" }
 testnet  = { chain-id = "4c78adac", original-published-id = "0x0" }
+mainnet  = { chain-id = "35834a8a", original-published-id = "0xbf561a51b4cdeab84f838734de92d482083b821dd67ccec92e075c34d30fa9d4" }
