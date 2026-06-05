@@ -102,26 +102,26 @@ impl Libp2pDht {
 
 impl Dht for Libp2pDht {
     fn publish(&self, manifest: &AgentManifest) -> Result<(), String> {
-        // Still verify locally
+        // Verify signature before storing.
         manifest.verify_signature()
             .map_err(|e| format!("Invalid manifest signature: {e}"))?;
 
-        // Always keep a local copy so get() works even without remote peers.
+        // Store locally — this is the source of truth for discovery queries.
         self.local_store.write().unwrap().insert(manifest.agent_id, manifest.clone());
 
-        let (reply_tx, reply_rx) = oneshot::channel();
+        // Fire-and-forget to the P2P swarm (best-effort replication).
+        // We do NOT await the reply here to avoid blocking inside tokio runtime.
+        let (reply_tx, _reply_rx) = oneshot::channel();
         let _ = self.tx.try_send(DhtCommand::Publish {
             manifest: manifest.clone(),
             reply: reply_tx,
         });
 
-        // For now, blocking wait to satisfy the sync trait (can be made async later)
-        futures::executor::block_on(async {
-            match reply_rx.await {
-                Ok(res) => res,
-                Err(_) => Err("Swarm task dropped".into()),
-            }
-        })
+        tracing::debug!(
+            agent_id = manifest.short_id(),
+            "Manifest stored locally and queued for P2P replication"
+        );
+        Ok(())
     }
 
     fn get(&self, agent_id: &[u8; 32]) -> Option<AgentManifest> {
