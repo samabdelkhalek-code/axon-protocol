@@ -9,7 +9,7 @@ RUSTFLAGS_OPT := RUSTFLAGS="-C target-cpu=native"
 .DEFAULT_GOAL := help
 
 .PHONY: help build test lint fmt clean dev-setup \
-        deploy-devnet deploy-testnet run-daemon \
+        deploy-devnet deploy-testnet deploy-mainnet run-daemon \
         bench doc check-all
 
 help: ## Show this help message
@@ -69,6 +69,12 @@ deploy-devnet: ## Deploy settlement contract to SUI devnet
 deploy-testnet: ## Deploy settlement contract to SUI testnet
 	@echo "Deploying to SUI testnet…"
 	$(SUI) client switch --env testnet
+	$(SUI) client publish --gas-budget 100000000 contracts/axon
+
+# NEW: Mainnet deployment rule
+deploy-mainnet: ## Deploy settlement contract to SUI mainnet
+	@echo "Deploying to SUI MAINNET…"
+	$(SUI) client switch --env mainnet
 	$(SUI) client publish --gas-budget 100000000 contracts/axon
 
 move-test: ## Run Move unit tests

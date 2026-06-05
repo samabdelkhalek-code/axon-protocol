@@ -107,6 +107,22 @@ module axon::settlement {
 
     // ── Public entry points ──────────────────────────────────────────────────
 
+    /// Create and share a reputation object for an agent.
+    /// Called once per agent on first registration.
+    /// Returns the shared object ID via event so callers can find it.
+    public entry fun register_agent(ctx: &mut TxContext) {
+        let rep = AgentReputation {
+            id:                     object::new(ctx),
+            agent:                  tx_context::sender(ctx),
+            successful_settlements: 0,
+            failed_settlements:     0,
+            total_compute_units:    0,
+            eigentrust_score:       1_000,
+            stake:                  coin::zero<SUI>(ctx),
+        };
+        transfer::share_object(rep);
+    }
+
     /// Lock funds in escrow before sending a HandshakeRequest.
     ///
     /// Must be called by the initiating agent; the escrow object ID is

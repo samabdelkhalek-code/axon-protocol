@@ -25,3 +25,11 @@ docker/data/
 
 # Logs
 *.log
+# Generated proto stubs
+axon_*_pb2.py
+axon_*_pb2_grpc.py
+__pycache__/
+*.pyc
+
+# Ephemeral SUI publication files
+contracts/axon/Pub.*.toml
