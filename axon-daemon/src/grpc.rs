@@ -95,8 +95,10 @@ impl DiscoveryService for DiscoveryImpl {
         self.state.dht.publish(&manifest)
             .map_err(|e| Status::internal(e))?;
 
-        // Update local index
-        self.state.index.write().unwrap().upsert(manifest);
+        // Update local index (recover from poisoned lock gracefully)
+        self.state.index.write()
+            .unwrap_or_else(|e| e.into_inner())
+            .upsert(manifest);
 
         Ok(Response::new(PublishManifestResponse {
             accepted: true,
@@ -115,7 +117,9 @@ impl DiscoveryService for DiscoveryImpl {
         // Use dummy reputation for now (0.5 for everyone)
         let reputation_fn = |_id: &[u8; 32]| 500_000u64;
 
-        let results = self.state.index.read().unwrap().search(
+        let results = self.state.index.read()
+            .unwrap_or_else(|e| e.into_inner())
+            .search(
             &embedding,
             req.top_k as usize,
             10_000, // median latency placeholder
