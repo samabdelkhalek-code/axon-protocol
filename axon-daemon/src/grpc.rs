@@ -117,14 +117,22 @@ impl DiscoveryService for DiscoveryImpl {
         // Use dummy reputation for now (0.5 for everyone)
         let reputation_fn = |_id: &[u8; 32]| 500_000u64;
 
-        let results = self.state.index.read()
+        let mut results = self.state.index.read()
             .unwrap_or_else(|e| e.into_inner())
             .search(
-            &embedding,
-            req.top_k as usize,
-            10_000, // median latency placeholder
-            reputation_fn,
-        );
+                &embedding,
+                req.top_k as usize,
+                10_000,
+                reputation_fn,
+            );
+
+        // MVP fallback: if HNSW returns nothing (hash embeddings have low cosine
+        // similarity), return all registered agents so discovery works end-to-end.
+        if results.is_empty() {
+            results = self.state.index.read()
+                .unwrap_or_else(|e| e.into_inner())
+                .all_agents(req.top_k as usize);
+        }
 
         let proto_results = results.into_iter().map(|r| {
             RankedAgent {

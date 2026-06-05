@@ -138,6 +138,16 @@ impl HnswIndex {
         scored
     }
 
+    /// Return up to `k` agents without similarity filtering (MVP fallback).
+    pub fn all_agents(&self, k: usize) -> Vec<SearchResult> {
+        self.entries.values().take(k).map(|m| SearchResult {
+            agent_id:   m.agent_id,
+            rank_score: 1.0,
+            similarity: 1.0,
+            manifest:   m.clone(),
+        }).collect()
+    }
+
     pub fn len(&self) -> usize { self.entries.len() }
     pub fn is_empty(&self) -> bool { self.entries.is_empty() }
 }
