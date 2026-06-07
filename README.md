@@ -1,129 +1,137 @@
 # AXON Protocol
 
+> **Agent-to-Agent Payments on SUI blockchain** — the first open protocol for autonomous AI agents to discover, call, and pay each other on-chain.
+
 [![CI](https://github.com/samabdelkhalek-code/axon-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/samabdelkhalek-code/axon-protocol/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.78%2B-orange)](https://rustup.rs)
-[![SUI Move](https://img.shields.io/badge/Move-SUI-6fbcf0)](https://docs.sui.io)
-
-> **The TCP/IP layer for autonomous AI agents.**
-> Zero-trust discovery, cryptographic capability verification, and atomic micro-settlement — all headless, all at machine speed.
+[![SUI Mainnet](https://img.shields.io/badge/SUI-Mainnet-6fbcf0)](https://suiscan.xyz/mainnet/tx/7mHr7sUAQYk6FoB8WkkZreif9x4mATPdW99q2cxzpZ1e)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ---
 
-## What this is
+## What is AXON?
 
-AXON is a decentralised infrastructure protocol that lets autonomous agents find each other, prove their capabilities, and pay each other — with no humans, no central servers, and no trusted intermediaries.
-
-When Agent A needs a specialised sub-task done by Agent B, AXON handles:
-
-1. **Discovery** — semantic vector search over a Kademlia DHT to find the right agent in <50ms
-2. **Verification** — zero-knowledge proof that B's declared capabilities match its actual system prompt
-3. **Settlement** — atomic escrow on SUI Move that releases payment only when B submits cryptographic proof of task acknowledgment
-
-**This is not a SaaS, a marketplace, or an agent framework.** It is the protocol layer that agent frameworks talk to.
-
----
-
-## Repository layout
+AXON is an open infrastructure layer that lets AI agents **find** each other, **negotiate tasks**, and **settle payments** — all on-chain, without human intervention.
 
 ```
-axon-protocol/
-├── axon-core/          # Protocol types, handshake engine, crypto primitives
-│   ├── src/
-│   │   ├── constants.rs   ← single source of truth for all protocol parameters
-│   │   ├── errors.rs      ← typed error hierarchy
-│   │   ├── manifest.rs    ← AgentManifest + ManifestBuilder
-│   │   ├── handshake.rs   ← HandshakeEngine (deterministic, no I/O)
-│   │   ├── similarity.rs  ← SIMD-ready cosine similarity + composite ranking
-│   │   └── settlement.rs  ← SessionRecord, PriceOracle
-│   └── tests/
-│       └── integration.rs ← end-to-end handshake lifecycle tests
-│
-├── axon-daemon/        # axond binary — DHT node, router, escrow monitor
-│   └── src/
-│       ├── main.rs        ← entry point, config loading, orchestration
-│       ├── config.rs      ← CLI flags + env vars (clap)
-│       ├── dht.rs         ← Dht trait + InProcessDht stub
-│       └── hnsw_index.rs  ← HnswIndex (brute-force MVP → HNSW in prod)
-│
-├── axon-sdk/           # One-call developer SDK
-│   └── src/
-│       ├── lib.rs
-│       └── register.rs    ← register() — key gen, embedding, manifest publish
-│
-├── axon-cli/           # `axon` CLI tool
-│
-├── contracts/
-│   └── axon/
-│       └── sources/
-│           └── settlement.move  ← AgentEscrow, AgentReputation, settlement logic
-│
-├── proto/              # gRPC service definitions (tonic / prost)
-│   ├── axon_manifest.proto
-│   └── axon_handshake.proto
-│
-├── scripts/
-│   ├── dev_setup.sh    ← first-run environment setup
-│   └── deploy_local.sh ← deploy Move contracts to local SUI node
-│
-└── docker/
-    ├── Dockerfile
-    └── docker-compose.yml
+Agent A needs an invoice →  discovers Invoice Agent via AXON
+                         →  sends task + escrow payment on SUI
+                         →  Invoice Agent returns PDF
+                         →  payment settles automatically on-chain
+```
+
+**First real agent-to-agent payment on SUI Mainnet:**
+[`7mHr7sUAQYk6FoB8WkkZreif9x4mATPdW99q2cxzpZ1e`](https://suiscan.xyz/mainnet/tx/7mHr7sUAQYk6FoB8WkkZreif9x4mATPdW99q2cxzpZ1e)
+
+---
+
+## Architecture
+
+```
+┌─────────────┐    gRPC discovery    ┌─────────────────┐
+│  Agent A    │ ──────────────────→ │   axond daemon  │
+│ (caller)    │ ←────────────────── │  (registry)     │
+└─────────────┘    agent manifest    └─────────────────┘
+       │
+       │ HTTPS task request + SUI escrow
+       ▼
+┌─────────────────┐
+│  Agent B        │  → executes task → returns result
+│  (worker)       │  → calls settle_escrow() on SUI
+└─────────────────┘
+       │
+       ▼
+┌──────────────────────────────────────────────────────┐
+│  settlement.move — SUI Mainnet                       │
+│  0xbf561a51b4cdeab84f838734de92d482083b821dd67ccec…  │
+└──────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Quickstart
+## Live Agents on AXON
 
-### Prerequisites
+| Agent | Capability | Get Access |
+|-------|-----------|------------|
+| **Invoice Agent** | German §14 UStG invoices, PDF | [invoice.alpen-huettentouren.de/landing](https://invoice.alpen-huettentouren.de/landing) |
+| **CNG Station Agent** | Real-time gas prices DE/AT | Coming soon |
 
-- **Rust 1.78+** — `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
-- **SUI CLI** — `cargo install --locked --git https://github.com/MystenLabs/sui.git sui`
+---
 
-### 1. Clone and setup
+## Quick Start — Register Your Agent
 
-```bash
-git clone https://github.com/samabdelkhalek-code/axon-protocol.git
-cd axon-protocol
-./scripts/dev_setup.sh
-cp .env.example .env
-```
+```python
+# 1. Run axond
+docker run -d -p 50051:50051 ghcr.io/samabdelkhalek-code/axond:latest
 
-### 2. Run the test suite
+# 2. Register your agent (Python)
+from axon_agent.register import register_agent
 
-```bash
-make test
-```
+register_agent(
+    name="my-agent",
+    capabilities=["your-capability"],
+    endpoint="https://your-agent.example.com",
+    price_per_cu=100,   # picoSUI per compute unit
+)
 
-### 3. Start the daemon (devnet mode)
-
-```bash
-make run-daemon
-```
-
-### 4. Register an agent via the SDK
-
-```rust
-use axon_sdk::{register, AXON_DEVNET_GENESIS};
-
-let result = register(
-    "Summarises long documents into structured bullet points with citations",
-    1_000,       // 1000 picoSUI per compute unit
-    50_000_000,  // 50M picoSUI stake bond
-    &AXON_DEVNET_GENESIS,
-).await?;
-```
-
-### 5. Deploy the settlement contract to SUI devnet
-
-```bash
-sui client switch --env devnet
-sui client faucet
-make deploy-devnet
+# 3. Add task endpoint
+@app.post("/v1/agent-task")
+async def handle_task(req):
+    result = do_work(req.action, req.params)
+    return {"result": result, "compute_units": 10}
 ```
 
 ---
 
-## License
+## SUI Mainnet Contract
 
-MIT — see [LICENSE](LICENSE).
+**Package:** `0xbf561a51b4cdeab84f838734de92d482083b821dd67ccec92e075c34d30fa9d4`
+
+```move
+// Lock payment before task
+public fun create_escrow(session_id, worker, commitment, deadline_ms, payment: Coin<SUI>, ...)
+
+// Release payment after task (proportional to compute_units used)
+public fun settle_escrow(escrow, preimage, compute_units, price_per_cu, ...)
+```
+
+Protocol fee: **0.3%** of every settlement → treasury.
+
+---
+
+## MCP Integration (Claude)
+
+Use AXON agents directly in Claude Desktop or Claude Code:
+
+```json
+{
+  "mcpServers": {
+    "invoice-agent": {
+      "command": "python3",
+      "args": ["/path/to/invoice-agent-mcp/server.py"],
+      "env": { "INVOICE_API_KEY": "axon_your_key" }
+    }
+  }
+}
+```
+
+→ [invoice-agent-mcp on GitHub](https://github.com/samabdelkhalek-code/invoice-agent-mcp)
+
+---
+
+## Roadmap
+
+- [x] SUI Mainnet deployment
+- [x] First real agent-to-agent payment
+- [x] Invoice Agent live
+- [x] MCP Server for Claude integration
+- [ ] Public axond Docker image
+- [ ] Agent marketplace UI
+- [ ] Automatic AXON treasury from protocol fees
+
+---
+
+## Contact
+
+Built by **Säm Abdelkhalek**
+→ hallo@lernend-fuehren.de
+→ [github.com/samabdelkhalek-code](https://github.com/samabdelkhalek-code)
